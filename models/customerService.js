@@ -41,7 +41,7 @@ class CustomerService {
                 if (error) {
                     res.status(400).json(error);            
                 } else {
-                    res.status(201).json(results);
+                    res.status(201).json(customerService);
                 }
             });
         }        
@@ -89,11 +89,24 @@ class CustomerService {
                 res.status(400).json(error);
             
             } else {
-                res.status(200).json(result);
+                res.status(200).json({...receivedData, id});
             }
         });
     }
 
+    deleteById(id, res) {
+        const sql = `DELETE FROM customerService WHERE id = ?`;
+
+        connection.query(sql, id, (error, result) => {
+
+            if (error) {
+                res.status(400).json(error);
+            
+            } else {
+                res.status(200).json({id});
+            }
+        });
+    }
 }
 
 module.exports = new CustomerService();

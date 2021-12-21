@@ -26,4 +26,10 @@ module.exports = app => {
         customerService.alter(id, receivedData, res);
     });
     
+    app.delete("/customer-service/:id", (req, res) => {
+        const id = parseInt(req.params.id);
+        
+        customerService.deleteById(id, res);
+    });
+
 };
