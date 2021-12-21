@@ -18,5 +18,12 @@ module.exports = app => {
 
         customerService.add(receivedData, res);       
     });
+
+    app.patch("/customer-service/:id", (req, res) => {
+        const id = parseInt(req.params.id);
+        const receivedData = req.body;
+        
+        customerService.alter(id, receivedData, res);
+    });
     
 };

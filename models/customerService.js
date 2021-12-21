@@ -75,6 +75,25 @@ class CustomerService {
         });
     }
 
+    alter(id, receivedData, res) {
+        
+        if (receivedData.schedulingDate) {
+            receivedData.schedulingDate = moment(receivedData.schedulingDate, "DD/MM/YYYY h:mm:ss")
+                .format("YYYY-MM-DD h:mm:ss");        
+        }
+        
+        const sql = `UPDATE customerService SET ? WHERE id = ?`;
+
+        connection.query(sql, [receivedData, id], (error, result) => {
+            if (error) {
+                res.status(400).json(error);
+            
+            } else {
+                res.status(200).json(result);
+            }
+        });
+    }
+
 }
 
 module.exports = new CustomerService();
