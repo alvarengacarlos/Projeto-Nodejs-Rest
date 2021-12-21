@@ -46,6 +46,35 @@ class CustomerService {
             });
         }        
     }
+
+    list(res) {
+        const sql = `SELECT * FROM customerService`;
+
+        connection.query(sql, (error, results) => {            
+            if (error) {
+                res.status(400).json(error);
+            } else {
+                res.status(200).json(results);
+            }
+        });
+    }
+
+    searchById(id, res) {
+        const sql = `SELECT * FROM customerService WHERE id = ?`;
+        
+        connection.query(sql, id,(error, result) => {
+            if (error) {
+                res.status(400).json(error);
+            
+            } else if (!result.length) {
+                res.status(404).json(error);
+
+            } else {
+                res.status(200).json(result[0]);
+            }
+        });
+    }
+
 }
 
 module.exports = new CustomerService();
