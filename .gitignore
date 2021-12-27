@@ -1,3 +1,5 @@
 node_modules
 connection.js
-assets/image
+assets/image/*
+!assets/image/Sakura.jpg
+!assets/image/Toby.jpg
