@@ -1,111 +1,96 @@
 const moment = require("moment");
-const connection = require("../infra/connection");
+const axios = require("axios");
+const repositories = require("../repositories/customerService");
 
 class CustomerService {
-    
-    add(receivedData, res) {
-        const sql = "INSERT INTO customerService SET ?";
 
-        let serviceDate = moment().format("YYYY-MM-DD h:mm:ss");
+    constructor() {
+        this.serviceDate = moment().format("YYYY-MM-DD h:mm:ss");      
+    }
+       
+    add(receivedData) {           
 
+        //Converts date type for american type
         let schedulingDate = moment(receivedData.schedulingDate, "DD/MM/YYYY h:mm:ss")
             .format("YYYY-MM-DD h:mm:ss");
 
-        // Validation
-        const dateIsValid = moment().isSameOrAfter(schedulingDate);
-        const clientIsValid = receivedData.client.length >= 5;
-
-        const validation = [
-            {
-                name: "schedulingDate",
-                valid: dateIsValid,
-                menssage: "Campo schedulingDate não é uma data válida. Ex: Dia/Mês/Ano"
-            },
-            {
-                name: "client",
-                valid: clientIsValid,
-                menssage: "Campo client deve ter mais de 4 caracteres"
-            },
-        ];
+        //Validations
+        const responses = [];
+        responses.push(this.validateCpf(receivedData.client));
+        responses.push(this.validateSchedulingDate(schedulingDate));
         
-        const errors = validation.filter(element => element.valid == false);
+        const errors = responses.filter(element => element.valid == false);
 
         if (errors.length) {
-            res.status(400).json(errors);
+            return new Promise((resolve, reject) => {reject(errors)});            
         
-        } else {
-            let customerService = {...receivedData, schedulingDate, serviceDate}
+        } else {            
+            let customerService = {...receivedData, schedulingDate, serviceDate: this.serviceDate}
 
-            connection.query(sql, customerService, (error, results) => {                        
-        
-                if (error) {
-                    res.status(400).json(error);            
-                } else {
-                    res.status(201).json(customerService);
-                }
-            });
+            return repositories.add(customerService)
+                .then(result => {
+                    
+                    const id = result.id;                    
+                    return {...customerService, id}
+
+                });
         }        
     }
 
-    list(res) {
-        const sql = `SELECT * FROM customerService`;
-
-        connection.query(sql, (error, results) => {            
-            if (error) {
-                res.status(400).json(error);
-            } else {
-                res.status(200).json(results);
-            }
-        });
+    validateSchedulingDate(schedulingDate) {        
+        let result = !moment(this.serviceDate).isSameOrAfter(schedulingDate);
+  
+        return {
+                name: "validateSchedulingDate",
+                valid: result,
+                menssage: "Campo schedulingDate não é uma data válida. Ex: Dia/Mês/Ano"
+            };                    
     }
 
-    searchById(id, res) {
-        const sql = `SELECT * FROM customerService WHERE id = ?`;
+    validateCpf(cpf) {        
+        let result = (cpf.length >= 11);        
+        return {
+                    name: "validateClient",
+                    valid: result,
+                    menssage: "Campo client deve ter 11 caracteres pois é um cpf"
+                };                        
+    }
+
+    queryClient(cpf) {
         
-        connection.query(sql, id,(error, result) => {
-            if (error) {
-                res.status(400).json(error);
-            
-            } else if (!result.length) {
-                res.status(404).json(error);
+        const query = async (cpf) => {            
+            return await axios.get(`http://localhost:8082/${cpf}`);                                            
+        }
 
-            } else {
-                res.status(200).json(result[0]);
-            }
-        });
+        return query(cpf);
     }
 
-    alter(id, receivedData, res) {
+    list() {       
+        return repositories.list();        
+    }
+
+    searchById(id) {        
+        
+        return repositories.searchById(id);        
+    }
+
+    alter(id, receivedData) {
         
         if (receivedData.schedulingDate) {
             receivedData.schedulingDate = moment(receivedData.schedulingDate, "DD/MM/YYYY h:mm:ss")
                 .format("YYYY-MM-DD h:mm:ss");        
         }
         
-        const sql = `UPDATE customerService SET ? WHERE id = ?`;
-
-        connection.query(sql, [receivedData, id], (error, result) => {
-            if (error) {
-                res.status(400).json(error);
-            
-            } else {
-                res.status(200).json({...receivedData, id});
-            }
-        });
+        return repositories.alter(id, receivedData)
+            .then(() => receivedData)            
     }
 
-    deleteById(id, res) {
-        const sql = `DELETE FROM customerService WHERE id = ?`;
+    deleteById(id) {
 
-        connection.query(sql, id, (error, result) => {
-
-            if (error) {
-                res.status(400).json(error);
-            
-            } else {
-                res.status(200).json({id});
-            }
-        });
+        return repositories.delete(id)
+            .then(result => {
+                return {id: id, affectedRows: result.affectedRows}
+            });          
     }
 }
 

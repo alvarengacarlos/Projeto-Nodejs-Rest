@@ -1,2 +1,3 @@
 node_modules
-infra/connection.js
+connection.js
+assets/image
