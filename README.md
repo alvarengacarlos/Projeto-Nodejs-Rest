@@ -32,7 +32,9 @@ This Rest API was developed in the course of [Alura Rest with NodeJS: API with E
 
 | URL | Http Verb | Parameters | Body Json |
 | :--- | :--- | :--- | :--- |
+| /pet/id | GET | :id | empty |
 | /pet | POST | empty | yes |
+| /pet/id | DELETE | :id | empty |
 
 ### Body Json Example
 ```json
