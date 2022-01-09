@@ -4,7 +4,7 @@ This Rest API was developed in the course of [Alura Rest with NodeJS: API with E
 
 > It is part of the training path of the Compass Scholarship Program.
 
-# Entry Points
+# End Points
 
 ### Costumer Service
 
